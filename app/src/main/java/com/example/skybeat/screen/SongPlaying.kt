@@ -38,7 +38,6 @@ fun SongPlaying(
     val isPlaying by playbackViewModel.isPlaying.collectAsState()
     val progress by playbackViewModel.progress.collectAsState()
 
-    // Start playing the song when the screen is navigated to
     LaunchedEffect(key1 = song.file) {
         playbackViewModel.playSong(song, context)
     }

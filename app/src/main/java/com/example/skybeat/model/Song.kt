@@ -9,7 +9,8 @@ import kotlinx.android.parcel.Parcelize
 data class Song(
     val title: String,
     val artist: String,
-    val file: String
+    val file: String,
+    val bannerUrl: String? = null
 ) : Parcelable
 
 data class SongResponse(
