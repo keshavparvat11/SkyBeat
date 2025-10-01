@@ -8,13 +8,15 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.skybeat.model.Song
 import com.example.skybeat.network.RetrofitInstance
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class PlaybackViewModel : ViewModel() {
-
+    private val db = FirebaseFirestore.getInstance()
     private val _songs = MutableStateFlow<List<Song>>(emptyList())
     val songs: StateFlow<List<Song>> = _songs
 
@@ -66,14 +68,24 @@ class PlaybackViewModel : ViewModel() {
     }
 
     fun loadSongs() {
-        viewModelScope.launch {
-            try {
-                val response = RetrofitInstance.api.getSongs()
-                _songs.value = response
-            } catch (e: Exception) {
-                e.printStackTrace()
+        db.collection("songs")
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    error.printStackTrace()
+                    return@addSnapshotListener
+                }
+
+                val songsList = value?.documents?.map { doc ->
+                    Song(
+                        title = doc.getString("title") ?: "",
+                        artist = doc.getString("artist") ?: "",
+                        file = doc.getString("file") ?: "",
+                        bannerUrl = doc.getString("bannerUrl") ?: ""
+                    )
+                } ?: emptyList()
+
+                _songs.value = songsList
             }
-        }
     }
 
     fun playSong(song: Song, context: Context) {
@@ -143,5 +155,28 @@ class PlaybackViewModel : ViewModel() {
         super.onCleared()
         exoPlayer?.release()
         exoPlayer = null
+    }
+    fun addSongToFirestore(
+        title: String,
+        artist: String,
+        file: String,
+        bannerUrl: String? = null,
+        onResult: (Boolean, String?) -> Unit
+    ) {
+        val song = hashMapOf(
+            "title" to title,
+            "artist" to artist,
+            "file" to file,
+            "bannerUrl" to bannerUrl
+        )
+
+        db.collection("songs")
+            .add(song)
+            .addOnSuccessListener {
+                onResult(true, null)
+            }
+            .addOnFailureListener { e ->
+                onResult(false, e.message)
+            }
     }
 }

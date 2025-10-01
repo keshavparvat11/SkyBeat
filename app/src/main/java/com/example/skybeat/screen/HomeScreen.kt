@@ -58,22 +58,6 @@ fun HomeScreen(
                 )
             )
         },
-        bottomBar = {
-            if (currentSong != null) {
-                MiniPlayer(
-                    currentSong = currentSong!!,
-                    isPlaying = isPlaying,
-                    progress = playbackViewModel.progress.collectAsState().value,
-                    onPlayPause = { playbackViewModel.togglePlayPause() },
-                    onNext = { playbackViewModel.playNextSong(context) },
-                    onPrevious = { playbackViewModel.playPreviousSong(context) },
-                    onClick = {
-                        val encodedFile = Uri.encode(currentSong!!.file)
-                        navController.navigate("detail/$encodedFile")
-                    }
-                )
-            }
-        }
     ) { innerPadding ->
         Box(
             modifier = Modifier
