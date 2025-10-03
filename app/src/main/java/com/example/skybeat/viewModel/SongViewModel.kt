@@ -77,6 +77,7 @@ class PlaybackViewModel : ViewModel() {
 
                 val songsList = value?.documents?.map { doc ->
                     Song(
+                        sId = doc.id,
                         title = doc.getString("title") ?: "",
                         artist = doc.getString("artist") ?: "",
                         file = doc.getString("file") ?: "",
@@ -178,5 +179,31 @@ class PlaybackViewModel : ViewModel() {
             .addOnFailureListener { e ->
                 onResult(false, e.message)
             }
+    }
+    fun updateSong(
+        songId: String,
+        title: String,
+        artist: String,
+        file: String,
+        bannerUrl: String?,
+        onResult: (Boolean, String?) -> Unit
+    ) {
+        val songData = hashMapOf(
+            "title" to title,
+            "artist" to artist,
+            "file" to file,
+            "bannerUrl" to bannerUrl
+        )
+
+        db.collection("songs").document(songId)
+            .set(songData)
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { e -> onResult(false, e.message) }
+    }
+    fun deleteSong(songId: String, onResult: (Boolean, String?) -> Unit) {
+        db.collection("songs").document(songId)
+            .delete()
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { e -> onResult(false, e.message) }
     }
 }
