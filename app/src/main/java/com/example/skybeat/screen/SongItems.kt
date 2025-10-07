@@ -2,12 +2,28 @@ package com.example.skybeat.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.MusicOff
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,7 +35,11 @@ import com.example.skybeat.model.Song
 
 // Composable function for a single song item in the list.
 @Composable
-fun SongItem(song: Song, isPlaying: Boolean, onClick: () -> Unit) {
+fun SongItem(song: Song,
+             isPlaying: Boolean,
+             onClick: () -> Unit,
+             onDownloadClick: (Song) -> Unit ={},
+             onPlaylistToggle: (Song) -> Unit ={}) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -81,6 +101,15 @@ fun SongItem(song: Song, isPlaying: Boolean, onClick: () -> Unit) {
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
+            IconButton(onClick = {onDownloadClick(song)}) {
+                Icon(imageVector = if(!song.download) Icons.Default.Download else Icons.Default.DownloadDone,
+                    "D")
+            }
+            IconButton(onClick = {onPlaylistToggle(song)}) {
+                Icon(imageVector = if(!song.playList) Icons.Default.LibraryMusic else Icons.Default.MusicOff,
+                    "D")
+            }
         }
     }
 }
+

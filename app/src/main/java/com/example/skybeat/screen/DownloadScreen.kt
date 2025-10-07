@@ -1,20 +1,38 @@
 package com.example.skybeat.screen
 
+import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FileDownload
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.skybeat.viewModel.PlaybackViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DownloadsScreen(navController: NavController) {
+fun DownloadsScreen(navController: NavController,
+                    playbackViewModel: PlaybackViewModel = viewModel()) {
+    val songs by playbackViewModel.songs.collectAsState()
+    val downloadSongs = songs.filter { it.download }
+    val currentSong by playbackViewModel.currentSong.collectAsState()
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -32,30 +50,30 @@ fun DownloadsScreen(navController: NavController) {
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.background,
-                            MaterialTheme.colorScheme.surface
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.background
                         )
                     )
-                ),
-            contentAlignment = Alignment.Center
+                )
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Default.FileDownload,
-                    contentDescription = "Downloads",
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "No downloaded songs",
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                )
-                Text(
-                    text = "Downloads feature coming soon!",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                item { Spacer(modifier = Modifier.height(8.dp)) }
+                items(downloadSongs) { song ->
+                    SongItem(
+                        song = song,
+                        isPlaying = currentSong?.file == song.file,
+                        onClick = {
+                            val encodedFile = Uri.encode(song.file)
+                            navController.navigate("detail/$encodedFile")
+                        }
+                    )
+                }
+                item { Spacer(modifier = Modifier.height(80.dp)) }
             }
         }
     }

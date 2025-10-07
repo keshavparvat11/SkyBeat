@@ -1,8 +1,6 @@
 package com.example.skybeat.model
 
 import android.os.Parcelable
-import androidx.versionedparcelable.ParcelField
-import com.google.android.gms.common.internal.safeparcel.SafeParcelable
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
@@ -11,7 +9,9 @@ data class Song(
     val title: String,
     val artist: String,
     val file: String,
-    val bannerUrl: String? = null
+    val bannerUrl: String? = null,
+    var download: Boolean = false,
+    var playList: Boolean = false,
 ) : Parcelable
 
 data class SongResponse(

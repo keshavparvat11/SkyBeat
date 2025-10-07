@@ -7,16 +7,16 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.skybeat.model.Song
-import com.example.skybeat.network.RetrofitInstance
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class PlaybackViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     private val _songs = MutableStateFlow<List<Song>>(emptyList())
     val songs: StateFlow<List<Song>> = _songs
 
@@ -81,7 +81,9 @@ class PlaybackViewModel : ViewModel() {
                         title = doc.getString("title") ?: "",
                         artist = doc.getString("artist") ?: "",
                         file = doc.getString("file") ?: "",
-                        bannerUrl = doc.getString("bannerUrl") ?: ""
+                        bannerUrl = doc.getString("bannerUrl") ?: "",
+                        download = doc.getBoolean("download") ?: false,
+                        playList = doc.getBoolean("playList") ?: false
                     )
                 } ?: emptyList()
 
@@ -168,7 +170,9 @@ class PlaybackViewModel : ViewModel() {
             "title" to title,
             "artist" to artist,
             "file" to file,
-            "bannerUrl" to bannerUrl
+            "bannerUrl" to bannerUrl,
+            "download" to false,
+            "playList" to false
         )
 
         db.collection("songs")
@@ -192,7 +196,9 @@ class PlaybackViewModel : ViewModel() {
             "title" to title,
             "artist" to artist,
             "file" to file,
-            "bannerUrl" to bannerUrl
+            "bannerUrl" to bannerUrl,
+            "download" to false,
+            "playList" to false,
         )
 
         db.collection("songs").document(songId)
@@ -205,5 +211,51 @@ class PlaybackViewModel : ViewModel() {
             .delete()
             .addOnSuccessListener { onResult(true, null) }
             .addOnFailureListener { e -> onResult(false, e.message) }
+    }
+    fun updateSongDownloadAndPlayList(
+        songId: String,
+        title: String,
+        artist: String,
+        file: String,
+        bannerUrl: String?,
+        download: Boolean,
+        playList: Boolean,
+        onResult: (Boolean, String?) -> Unit
+    ) {
+        val songData = hashMapOf(
+            "title" to title,
+            "artist" to artist,
+            "file" to file,
+            "bannerUrl" to bannerUrl,
+            "download" to download,
+            "playList" to playList,
+        )
+
+        db.collection("songs").document(songId)
+            .set(songData)
+            .addOnSuccessListener { onResult(true, null) }
+            .addOnFailureListener { e -> onResult(false, e.message) }
+    }
+    fun addToDownloads(song: Song) {
+        viewModelScope.launch {
+            db.collection("songs").document(song.sId)
+                .update("download", !song.download)
+                .addOnSuccessListener {
+                    // Local state will automatically update via snapshot listener
+                }
+        }
+    }
+
+
+    fun togglePlaylist(song: Song) {
+        viewModelScope.launch {
+            db.collection("songs").document(song.sId)
+                .update("playList", !song.playList)
+        }
+    }
+    fun addD(sId: String){
+        val userId: String = auth.uid.toString()
+        db.collection("songs").document(userId).collection("download")
+            .add("sId" to sId)
     }
 }
