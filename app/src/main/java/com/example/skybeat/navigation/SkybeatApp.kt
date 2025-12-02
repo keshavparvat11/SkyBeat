@@ -1,12 +1,19 @@
 package com.example.skybeat.navigation
 
+import android.net.Uri
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,10 +21,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.skybeat.screen.*
+import com.example.skybeat.screen.AdminScreen
+import com.example.skybeat.screen.DownloadsScreen
+import com.example.skybeat.screen.HomeScreen
+import com.example.skybeat.screen.LibraryScreen
+import com.example.skybeat.screen.SearchScreen
+import com.example.skybeat.screen.SongPlaying
+import com.example.skybeat.screen.SplashScreen
 import com.example.skybeat.viewModel.PlaybackViewModel
-import android.net.Uri
-import androidx.compose.runtime.collectAsState
+import com.example.taskdesk.screen.logingScreen.ForgetPasswordScreen
 import com.example.taskdesk.screen.logingScreen.LoginScreen
 import com.example.taskdesk.screen.logingScreen.SignUpScreen
 
@@ -82,9 +94,11 @@ fun SkybeatApp(playbackViewModel: PlaybackViewModel = viewModel()) {
             composable(BottomNavItems.Library.route) { LibraryScreen(navController) }
             composable(BottomNavItems.Downloads.route) { DownloadsScreen(navController) }
             composable("search") { SearchScreen(navController) }
-            composable("Admin") { AdminScreen() }
+            composable("Admin") { AdminScreen(navController=navController)}
             composable("Login") { LoginScreen(navController) }
             composable("SignUp") { SignUpScreen(navController) }
+            composable("ForgetPass") { ForgetPasswordScreen(navController) }
+
             composable(
                 route = "detail/{songFile}",
                 arguments = listOf(navArgument("songFile") {

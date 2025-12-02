@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.MusicOff
 import androidx.compose.material.icons.filled.PlayArrow
@@ -53,18 +54,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.skybeat.component.AddSongDialog
 import com.example.skybeat.component.EditSongDialog
 import com.example.skybeat.model.Song
 import com.example.skybeat.viewModel.PlaybackViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminScreen(vm: PlaybackViewModel = viewModel()) {
+fun AdminScreen(vm: PlaybackViewModel = viewModel(), navController: NavController) {
 
     val context = LocalContext.current
     var message by remember { mutableStateOf<String?>(null) }
     val songs by vm.songs.collectAsState()
+    val auth = FirebaseAuth.getInstance()
 
     var showAddSongDialog by remember { mutableStateOf(false) }
     var editMode by remember { mutableStateOf(false) }
@@ -83,7 +87,20 @@ fun AdminScreen(vm: PlaybackViewModel = viewModel()) {
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                ),
+                actions = {
+                    IconButton(onClick = {
+                        auth.signOut()
+                    navController.navigate("Login")}) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "More",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+
+
+                }
             )
         },
         floatingActionButton = {
