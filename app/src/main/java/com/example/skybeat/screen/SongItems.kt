@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.MusicNote
@@ -36,7 +38,9 @@ fun SongItem(
     song: Song,
     isPlaying: Boolean,
     isInPlaylist: Boolean,
+    isDownloaded: Boolean,
     onClick: () -> Unit,
+    onDownloadClick: (Song) -> Unit,
     onPlaylistClick: (Song, Boolean) -> Unit
 ) {
     Card(
@@ -57,7 +61,7 @@ fun SongItem(
             modifier = Modifier.padding(16.dp)
         ) {
 
-            // Album icon
+            // 🎵 Album Icon
             Box(
                 modifier = Modifier
                     .size(56.dp)
@@ -74,7 +78,7 @@ fun SongItem(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Song info
+            // 🎶 Song Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     song.title,
@@ -92,7 +96,7 @@ fun SongItem(
                 )
             }
 
-            // Playing indicator
+            // ▶ Playing Indicator
             if (isPlaying) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
@@ -102,8 +106,21 @@ fun SongItem(
                 )
             }
 
+            // ⬇️ Download Button
+            IconButton(
+                onClick = { onDownloadClick(song) },
+                enabled = !isDownloaded
+            ) {
+                Icon(
+                    imageVector = if (isDownloaded)
+                        Icons.Default.DownloadDone
+                    else
+                        Icons.Default.Download,
+                    contentDescription = "Download"
+                )
+            }
 
-            // Playlist button (FIXED)
+            // ❤️ Playlist Button
             IconButton(
                 onClick = {
                     onPlaylistClick(song, isInPlaylist)

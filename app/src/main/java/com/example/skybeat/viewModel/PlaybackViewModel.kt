@@ -1,6 +1,7 @@
 package com.example.skybeat.viewModel
 
 import android.content.Context
+import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -14,19 +15,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 
 class PlaybackViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    /* -------------------- STATE -------------------- */
-
     private val _songs = MutableStateFlow<List<Song>>(emptyList())
     val songs: StateFlow<List<Song>> = _songs
 
     private val _playlistSongs = MutableStateFlow<List<Song>>(emptyList())
     val playlistSongs: StateFlow<List<Song>> = _playlistSongs
+
+    private val _downloadedSongs = MutableStateFlow<Set<String>>(emptySet())
+    val downloadedSongs: StateFlow<Set<String>> = _downloadedSongs
 
     private val _currentSong = MutableStateFlow<Song?>(null)
     val currentSong: StateFlow<Song?> = _currentSong
@@ -88,6 +91,7 @@ class PlaybackViewModel : ViewModel() {
                         bannerUrl = doc.getString("bannerUrl")
                     )
                 } ?: emptyList()
+                loadDownloadedSongs()
             }
     }
 
@@ -280,4 +284,34 @@ class PlaybackViewModel : ViewModel() {
             .addOnSuccessListener { onResult(true, null) }
             .addOnFailureListener { e -> onResult(false, e.message) }
     }
+    fun markSongDownloaded(songId: String) {
+        _downloadedSongs.value = _downloadedSongs.value + songId
+    }
+    private fun getDownloadDir(): File {
+        return Environment
+            .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+            .resolve("SkyBeat")
+    }
+    fun loadDownloadedSongs() {
+        val dir = getDownloadDir()
+        if (!dir.exists()) {
+            _downloadedSongs.value = emptySet()
+            return
+        }
+
+        val downloadedTitles = dir.listFiles()
+            ?.filter { it.extension == "mp3" }
+            ?.map { it.nameWithoutExtension }
+            ?.toSet()
+            ?: emptySet()
+
+        // Match file names with songs
+        val downloadedIds = _songs.value
+            .filter { downloadedTitles.contains(it.title) }
+            .map { it.sId }
+            .toSet()
+
+        _downloadedSongs.value = downloadedIds
+    }
+
 }

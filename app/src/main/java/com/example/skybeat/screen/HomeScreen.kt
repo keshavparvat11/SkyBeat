@@ -32,10 +32,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.skybeat.component.DownloadHelper
 import com.example.skybeat.model.Song
 import com.example.skybeat.viewModel.PlaybackViewModel
 
@@ -47,6 +49,8 @@ fun HomeScreen(
 ) {
     val songs by playbackViewModel.songs.collectAsState()
     val currentSong by playbackViewModel.currentSong.collectAsState()
+    val downloadedSongs by playbackViewModel.downloadedSongs.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -130,16 +134,25 @@ fun HomeScreen(
 
                 items(songs.take(8)) { song ->
                     val isInPlaylist = playbackViewModel.isSongInPlaylist(song.sId)
+                    val isDownloaded = downloadedSongs.contains(song.sId)
 
                     SongItem(
                         song = song,
                         isPlaying = currentSong?.file == song.file,
                         isInPlaylist = isInPlaylist,
+                        isDownloaded = isDownloaded,
                         onClick = {
                             val encoded = Uri.encode(song.file)
                             navController.navigate("detail/$encoded")
                         },
-
+                        onDownloadClick = {
+                            DownloadHelper.downloadSong(
+                                context = context,
+                                songUrl = it.file,
+                                songTitle = it.title
+                            )
+                            playbackViewModel.markSongDownloaded(it.sId)
+                        },
                         onPlaylistClick = { clickedSong, inPlaylist ->
                             if (inPlaylist) {
                                 playbackViewModel.removeSongFromPlaylist(clickedSong)
