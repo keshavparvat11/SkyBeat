@@ -22,12 +22,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,28 +41,28 @@ fun LibraryScreen(
     navController: NavController,
     playbackViewModel: PlaybackViewModel = viewModel()
 ) {
-    val context = LocalContext.current
-    val songs by playbackViewModel.songs.collectAsState()
-    val playlistSongs = songs.filter { it.playList }
+    // 🔹 Load playlist when screen opens
+    LaunchedEffect(Unit) {
+        playbackViewModel.loadPlaylist()
+    }
+
+    val playlistSongs by playbackViewModel.playlistSongs.collectAsState()
     val currentSong by playbackViewModel.currentSong.collectAsState()
-    val isPlaying by playbackViewModel.isPlaying.collectAsState()
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Your Library",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
+                        text = "Your Library",
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 actions = {
                     IconButton(onClick = { navController.navigate("search") }) {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = MaterialTheme.colorScheme.onBackground
+                            contentDescription = "Search"
                         )
                     }
                 },
@@ -71,12 +72,13 @@ fun LibraryScreen(
             )
         }
     ) { innerPadding ->
+
         Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
                 .background(
-                    brush = Brush.verticalGradient(
+                    Brush.verticalGradient(
                         colors = listOf(
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             MaterialTheme.colorScheme.background
@@ -84,24 +86,53 @@ fun LibraryScreen(
                     )
                 )
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                item { Spacer(modifier = Modifier.height(8.dp)) }
-                items(playlistSongs) { song ->
-                    SongItem(
-                        song = song,
-                        isPlaying = currentSong?.file == song.file,
-                        onClick = {
-                            val encodedFile = Uri.encode(song.file)
-                            navController.navigate("detail/$encodedFile")
-                        }
+
+            // 🔹 Empty state
+            if (playlistSongs.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No songs in your playlist yet 🎧",
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                item { Spacer(modifier = Modifier.height(80.dp)) }
+            } else {
+                // 🔹 Playlist songs list
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    item { Spacer(modifier = Modifier.height(8.dp)) }
+
+                    items(playlistSongs) { song ->
+                        val isInPlaylist = playbackViewModel.isSongInPlaylist(song.sId)
+
+                        SongItem(
+                            song = song,
+                            isPlaying = currentSong?.file == song.file,
+                            isInPlaylist = isInPlaylist,
+                            onClick = {
+                                val encoded = Uri.encode(song.file)
+                                navController.navigate("detail/$encoded")
+                            },
+
+                            onPlaylistClick = { clickedSong, inPlaylist ->
+                                if (inPlaylist) {
+                                    playbackViewModel.removeSongFromPlaylist(clickedSong)
+                                } else {
+                                    playbackViewModel.addSongToPlaylist(clickedSong)
+                                }
+                            }
+                        )
+                    }
+
+                    item { Spacer(modifier = Modifier.height(80.dp)) }
+                }
             }
         }
     }

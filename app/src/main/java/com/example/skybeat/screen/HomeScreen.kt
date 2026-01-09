@@ -6,13 +6,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -31,7 +29,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -41,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.skybeat.model.Song
 import com.example.skybeat.viewModel.PlaybackViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -57,15 +55,15 @@ fun HomeScreen(
                     Text(
                         "Skybeat",
                         style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.ExtraBold,
+                        fontWeight = FontWeight.ExtraBold
                     )
                 },
                 actions = {
                     IconButton(onClick = { navController.navigate("search") }) {
-                        Icon(Icons.Default.Search, contentDescription = null)
+                        Icon(Icons.Default.Search, contentDescription = "Search")
                     }
                     IconButton(onClick = { navController.navigate("Login") }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = null)
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -93,10 +91,10 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(26.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
 
-                // ---------------------- WELCOME TEXT ----------------------
+                // 🔹 Welcome
                 item {
                     Text(
                         "Welcome back 🎵",
@@ -106,7 +104,7 @@ fun HomeScreen(
                     )
                 }
 
-                // ---------------------- FEATURED CAROUSEL ----------------------
+                // 🔹 Featured
                 item {
                     SectionTitle("Featured")
                     Spacer(Modifier.height(12.dp))
@@ -125,18 +123,29 @@ fun HomeScreen(
                     }
                 }
 
-                // ---------------------- RECENTLY PLAYED ----------------------
+                // 🔹 Recently Played
                 item {
                     SectionTitle("Recently Played")
                 }
 
                 items(songs.take(8)) { song ->
-                    SongRow(
+                    val isInPlaylist = playbackViewModel.isSongInPlaylist(song.sId)
+
+                    SongItem(
                         song = song,
                         isPlaying = currentSong?.file == song.file,
+                        isInPlaylist = isInPlaylist,
                         onClick = {
                             val encoded = Uri.encode(song.file)
                             navController.navigate("detail/$encoded")
+                        },
+
+                        onPlaylistClick = { clickedSong, inPlaylist ->
+                            if (inPlaylist) {
+                                playbackViewModel.removeSongFromPlaylist(clickedSong)
+                            } else {
+                                playbackViewModel.addSongToPlaylist(clickedSong)
+                            }
                         }
                     )
                 }
@@ -146,6 +155,9 @@ fun HomeScreen(
         }
     }
 }
+
+/* ---------- Helpers ---------- */
+
 @Composable
 fun SectionTitle(text: String) {
     Text(
@@ -156,6 +168,7 @@ fun SectionTitle(text: String) {
         )
     )
 }
+
 @Composable
 fun FeaturedCard(
     song: Song,
@@ -204,46 +217,6 @@ fun FeaturedCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-    }
-}
-@Composable
-fun SongRow(
-    song: Song,
-    isPlaying: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(70.dp)
-            .background(
-                MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
-                shape = MaterialTheme.shapes.medium
-            )
-            .clickable { onClick() }
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .background(
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
-                    shape = MaterialTheme.shapes.small
-                )
-        )
-
-        Column(
-            modifier = Modifier.padding(start = 12.dp)
-        ) {
-            Text(song.title, fontWeight = FontWeight.SemiBold)
-            Text(
-                song.artist,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

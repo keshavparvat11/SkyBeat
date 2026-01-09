@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.MusicNote
@@ -33,24 +31,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.skybeat.model.Song
 
-// Composable function for a single song item in the list.
 @Composable
-fun SongItem(song: Song,
-             isPlaying: Boolean,
-             onClick: () -> Unit,
-             onDownloadClick: (Song) -> Unit ={},
-             onPlaylistToggle: (Song) -> Unit ={}) {
+fun SongItem(
+    song: Song,
+    isPlaying: Boolean,
+    isInPlaylist: Boolean,
+    onClick: () -> Unit,
+    onPlaylistClick: (Song, Boolean) -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isPlaying) {
+            containerColor = if (isPlaying)
                 MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-            } else {
+            else
                 MaterialTheme.colorScheme.surface
-            }
         ),
         elevation = CardDefaults.cardElevation(if (isPlaying) 8.dp else 2.dp)
     ) {
@@ -58,6 +56,8 @@ fun SongItem(song: Song,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(16.dp)
         ) {
+
+            // Album icon
             Box(
                 modifier = Modifier
                     .size(56.dp)
@@ -74,9 +74,8 @@ fun SongItem(song: Song,
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            // Song info
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     song.title,
                     style = MaterialTheme.typography.titleMedium,
@@ -93,6 +92,7 @@ fun SongItem(song: Song,
                 )
             }
 
+            // Playing indicator
             if (isPlaying) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
@@ -101,15 +101,22 @@ fun SongItem(song: Song,
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
-            IconButton(onClick = {onDownloadClick(song)}) {
-                Icon(imageVector = if(!song.download) Icons.Default.Download else Icons.Default.DownloadDone,
-                    "D")
-            }
-            IconButton(onClick = {onPlaylistToggle(song)}) {
-                Icon(imageVector = if(!song.playList) Icons.Default.LibraryMusic else Icons.Default.MusicOff,
-                    "D")
+
+
+            // Playlist button (FIXED)
+            IconButton(
+                onClick = {
+                    onPlaylistClick(song, isInPlaylist)
+                }
+            ) {
+                Icon(
+                    imageVector = if (isInPlaylist)
+                        Icons.Default.MusicOff
+                    else
+                        Icons.Default.LibraryMusic,
+                    contentDescription = "Playlist"
+                )
             }
         }
     }
 }
-
