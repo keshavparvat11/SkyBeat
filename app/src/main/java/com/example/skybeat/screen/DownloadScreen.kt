@@ -40,7 +40,7 @@ fun DownloadsScreen(
     val currentSong by playbackViewModel.currentSong.collectAsState()
     val downloadedSongs by playbackViewModel.downloadedSongs.collectAsState()
 
-    // Filter only downloaded songs
+
     val downloadedList = songs.filter {
         downloadedSongs.contains(it.sId)
     }
