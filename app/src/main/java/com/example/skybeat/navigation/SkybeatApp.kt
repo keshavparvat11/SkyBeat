@@ -15,6 +15,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,6 +34,7 @@ import com.example.taskdesk.screen.logingScreen.ForgetPasswordScreen
 import com.example.taskdesk.screen.logingScreen.LoginScreen
 import com.example.taskdesk.screen.logingScreen.SignUpScreen
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SkybeatApp(playbackViewModel: PlaybackViewModel = viewModel()) {
@@ -109,7 +111,7 @@ fun SkybeatApp(playbackViewModel: PlaybackViewModel = viewModel()) {
                 val songFile = encodedFile?.let { Uri.decode(it) }
                 val song = playbackViewModel.songs.collectAsState().value.find { it.file == songFile }
                 if (song != null) {
-                    SongPlaying(song = song)
+                    SongPlaying(song = song, navController = navController)
                 } else {
                     Text("Song not found")
                 }

@@ -1,20 +1,43 @@
 package com.example.skybeat.screen
 
+import androidx.annotation.OptIn
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -24,22 +47,35 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
 import com.example.skybeat.model.Song
 import com.example.skybeat.viewModel.PlaybackViewModel
-import androidx.compose.runtime.LaunchedEffect
 
+@OptIn(UnstableApi::class)
 @Composable
 fun SongPlaying(
+    navController: NavController,
     song: Song,
     playbackViewModel: PlaybackViewModel = viewModel()
 ) {
     val context = LocalContext.current
+
     val currentSong by playbackViewModel.currentSong.collectAsState()
     val isPlaying by playbackViewModel.isPlaying.collectAsState()
     val progress by playbackViewModel.progress.collectAsState()
+    val duration by playbackViewModel.duration.collectAsState(initial = 0L)
+    val currentPosition by playbackViewModel.currentPosition.collectAsState(initial = 0L)
 
-    LaunchedEffect(key1 = song.file) {
+
+    var sliderPosition by remember { mutableStateOf(progress) }
+
+    LaunchedEffect(song.file) {
         playbackViewModel.playSong(song, context)
+    }
+
+    LaunchedEffect(progress) {
+        sliderPosition = progress
     }
 
     Box(
@@ -47,134 +83,175 @@ fun SongPlaying(
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1A1A2E),
-                        Color(0xFF16213E),
-                        Color(0xFF0F3460)
+                    listOf(
+                        Color(0xFF0F2027),
+                        Color(0xFF203A43),
+                        Color(0xFF2C5364)
                     )
                 )
-            ),
-        contentAlignment = Alignment.Center
+            )
     ) {
-        Card(
+
+        /* ---------- BACK BUTTON ---------- */
+        IconButton(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier
+                .padding(16.dp)
+                .size(40.dp)
+                .align(Alignment.TopStart)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White
+            )
+        }
+
+        /* ---------- MAIN CONTENT ---------- */
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(450.dp)
-                .padding(16.dp)
-                .padding(bottom = 50.dp)
-                .shadow(16.dp, RoundedCornerShape(24.dp)),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF2D2D44)
-            )
+                .padding(top = 80.dp, start = 24.dp, end = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            /* Album Placeholder */
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .size(220.dp)
+                    .shadow(20.dp, CircleShape)
+                    .clip(CircleShape)
                     .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color(0xFF2D2D44),
-                                Color(0xFF252536)
+                        Brush.radialGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primary,
+                                Color.Transparent
                             )
                         )
-                    )
-                    .padding(24.dp),
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier.align(alignment = Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Icon(
+                    imageVector = Icons.Outlined.MusicNote,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(120.dp)
+                )
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            /* Song Info */
+            Text(
+                text = currentSong?.title ?: "",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                text = currentSong?.artist ?: "",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(Modifier.height(32.dp))
+
+            /* Seek Bar */
+            Slider(
+                value = sliderPosition,
+                onValueChange = { sliderPosition = it },
+                onValueChangeFinished = {
+                    playbackViewModel.seekTo(sliderPosition)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = Color.White.copy(alpha = 0.3f)
+                )
+            )
+
+            /* Time Labels */
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = formatTime(currentPosition),
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = formatTime(duration),
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            /* Controls */
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+                IconButton(onClick = {
+                    playbackViewModel.playPreviousSong(context)
+                }) {
                     Icon(
-                        modifier = Modifier.size(100.dp),
-                        imageVector = Icons.Outlined.MusicNote,
-                        contentDescription = "Banner",
-                        tint = Color.White
+                        imageVector = Icons.Default.SkipPrevious,
+                        contentDescription = "Previous",
+                        tint = Color.White,
+                        modifier = Modifier.size(40.dp)
                     )
+                }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = currentSong?.title ?: "",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 28.sp
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Text(
-                        text = currentSong?.artist ?: "",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 28.sp
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    LinearProgressIndicator(
-                        progress = progress,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(6.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                    )
-                    Spacer(modifier = Modifier.height(25.dp))
-
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        IconButton(
-                            onClick = { playbackViewModel.playPreviousSong(context) },
-                            modifier = Modifier.size(72.dp)
-                        ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary,
+                    shadowElevation = 10.dp,
+                    modifier = Modifier.size(80.dp)
+                ) {
+                    IconButton(onClick = {
+                        playbackViewModel.togglePlayPause()
+                    }) {
+                        AnimatedContent(targetState = isPlaying, label = "") { playing ->
                             Icon(
-                                imageVector = Icons.Default.SkipPrevious,
-                                contentDescription = "Previous",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(48.dp)
-                            )
-                        }
-
-                        Spacer(Modifier.width(16.dp))
-
-                        IconButton(
-                            onClick = { playbackViewModel.togglePlayPause() },
-                            modifier = Modifier.size(72.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                contentDescription = if (isPlaying) "Pause" else "Play",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(64.dp)
-                            )
-                        }
-
-                        Spacer(Modifier.width(16.dp))
-
-                        IconButton(
-                            onClick = { playbackViewModel.playNextSong(context) },
-                            modifier = Modifier.size(72.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SkipNext,
-                                contentDescription = "Next",
-                                tint = MaterialTheme.colorScheme.onSurface,
+                                imageVector =
+                                    if (playing) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = null,
+                                tint = Color.Black,
                                 modifier = Modifier.size(48.dp)
                             )
                         }
                     }
                 }
+
+                IconButton(onClick = {
+                    playbackViewModel.playNextSong(context)
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.SkipNext,
+                        contentDescription = "Next",
+                        tint = Color.White,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
             }
         }
     }
+}
+
+/* -------- TIME FORMATTER -------- */
+private fun formatTime(ms: Long): String {
+    val totalSeconds = ms / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%d:%02d".format(minutes, seconds)
 }

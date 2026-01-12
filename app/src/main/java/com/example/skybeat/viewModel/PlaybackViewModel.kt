@@ -58,9 +58,23 @@ class PlaybackViewModel : ViewModel() {
 
     private var mediaSession: MediaSession? = null
     private var musicNotificationManager: MusicNotificationManager? = null
+    private val _duration = MutableStateFlow(0L)
+    val duration: StateFlow<Long> = _duration
+
+    private val _currentPosition = MutableStateFlow(0L)
+    val currentPosition: StateFlow<Long> = _currentPosition
 
     init {
         loadSongs()
+    }
+    fun seekTo(progress: Float) {
+        exoPlayer?.let { player ->
+            val duration = player.duration
+            if (duration > 0) {
+                val seekPosition = (duration * progress).toLong()
+                player.seekTo(seekPosition)
+            }
+        }
     }
 
     /* -------------------- PLAYER SETUP -------------------- */
@@ -176,20 +190,23 @@ class PlaybackViewModel : ViewModel() {
     }
 
     /* -------------------- PROGRESS -------------------- */
-
     private fun startProgressUpdate() {
         progressJob?.cancel()
         progressJob = viewModelScope.launch {
-            while (_isPlaying.value) {
-                exoPlayer?.let {
-                    if (it.duration > 0) {
-                        _progress.value = it.currentPosition.toFloat() / it.duration
+            while (true) {
+                exoPlayer?.let { player ->
+                    val dur = player.duration
+                    if (dur > 0) {
+                        _duration.value = dur
+                        _currentPosition.value = player.currentPosition
+                        _progress.value = player.currentPosition.toFloat() / dur
                     }
                 }
-                delay(100)
+                delay(500)
             }
         }
     }
+
 
     private fun stopProgressUpdate() {
         progressJob?.cancel()
