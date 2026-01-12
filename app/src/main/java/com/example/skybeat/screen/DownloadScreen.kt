@@ -1,5 +1,6 @@
 package com.example.skybeat.screen
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -101,7 +102,8 @@ fun DownloadsScreen(
                             isInPlaylist = playbackViewModel.isSongInPlaylist(song.sId),
                             isDownloaded = true,
                             onClick = {
-                                playbackViewModel.playSong(song, context)
+                                val encoded = Uri.encode(song.file)
+                                navController.navigate("detail/$encoded")
                             },
                             onDownloadClick = {}, // already downloaded
                             onPlaylistClick = { clickedSong, inPlaylist ->

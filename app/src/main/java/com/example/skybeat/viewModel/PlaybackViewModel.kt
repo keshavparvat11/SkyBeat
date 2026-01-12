@@ -5,9 +5,13 @@ import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaSession
 import com.example.skybeat.model.Song
+import com.example.skybeat.player.MusicNotificationManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Job
@@ -17,10 +21,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
+@UnstableApi
 class PlaybackViewModel : ViewModel() {
+
+    /* -------------------- FIREBASE -------------------- */
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+
+    /* -------------------- STATE -------------------- */
 
     private val _songs = MutableStateFlow<List<Song>>(emptyList())
     val songs: StateFlow<List<Song>> = _songs
@@ -45,9 +54,16 @@ class PlaybackViewModel : ViewModel() {
     private var exoPlayer: ExoPlayer? = null
     private var progressJob: Job? = null
 
+    /* -------------------- MEDIA SESSION + NOTIFICATION -------------------- */
+
+    private var mediaSession: MediaSession? = null
+    private var musicNotificationManager: MusicNotificationManager? = null
+
     init {
         loadSongs()
     }
+
+    /* -------------------- PLAYER SETUP -------------------- */
 
     private fun setupPlayer(context: Context) {
         if (exoPlayer != null) return
@@ -73,6 +89,16 @@ class PlaybackViewModel : ViewModel() {
                 }
             })
         }
+
+        mediaSession = MediaSession.Builder(context, exoPlayer!!)
+            .setId("SkyBeatSession")
+            .build()
+
+        musicNotificationManager = MusicNotificationManager(
+            context = context,
+            player = exoPlayer!!,
+            mediaSession = mediaSession!!
+        )
     }
 
     /* -------------------- SONGS -------------------- */
@@ -91,6 +117,7 @@ class PlaybackViewModel : ViewModel() {
                         bannerUrl = doc.getString("bannerUrl")
                     )
                 } ?: emptyList()
+
                 loadDownloadedSongs()
             }
     }
@@ -103,6 +130,12 @@ class PlaybackViewModel : ViewModel() {
         val mediaItem = MediaItem.Builder()
             .setMediaId(song.file)
             .setUri(song.file)
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setTitle(song.title)
+                    .setArtist(song.artist)
+                    .build()
+            )
             .build()
 
         exoPlayer?.apply {
@@ -122,19 +155,16 @@ class PlaybackViewModel : ViewModel() {
 
     fun playNextSong(context: Context) {
         val list = _songs.value
-        val currentIndex = list.indexOfFirst { it.file == _currentSong.value?.file }
-        if (currentIndex == -1 || list.isEmpty()) return
-
-        playSong(list[(currentIndex + 1) % list.size], context)
+        val index = list.indexOfFirst { it.file == _currentSong.value?.file }
+        if (index == -1 || list.isEmpty()) return
+        playSong(list[(index + 1) % list.size], context)
     }
 
     fun playPreviousSong(context: Context) {
         val list = _songs.value
-        val currentIndex = list.indexOfFirst { it.file == _currentSong.value?.file }
-        if (currentIndex == -1 || list.isEmpty()) return
-
-        val prevIndex = if (currentIndex - 1 < 0) list.lastIndex else currentIndex - 1
-        playSong(list[prevIndex], context)
+        val index = list.indexOfFirst { it.file == _currentSong.value?.file }
+        if (index == -1 || list.isEmpty()) return
+        playSong(list[if (index - 1 < 0) list.lastIndex else index - 1], context)
     }
 
     fun stopSong() {
@@ -145,14 +175,15 @@ class PlaybackViewModel : ViewModel() {
         stopProgressUpdate()
     }
 
+    /* -------------------- PROGRESS -------------------- */
+
     private fun startProgressUpdate() {
         progressJob?.cancel()
         progressJob = viewModelScope.launch {
             while (_isPlaying.value) {
                 exoPlayer?.let {
                     if (it.duration > 0) {
-                        _progress.value =
-                            it.currentPosition.toFloat() / it.duration.toFloat()
+                        _progress.value = it.currentPosition.toFloat() / it.duration
                     }
                 }
                 delay(100)
@@ -165,12 +196,6 @@ class PlaybackViewModel : ViewModel() {
         progressJob = null
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        exoPlayer?.release()
-        exoPlayer = null
-    }
-
     /* -------------------- PLAYLIST -------------------- */
 
     fun loadPlaylist(playlistName: String = "favorites") {
@@ -181,9 +206,7 @@ class PlaybackViewModel : ViewModel() {
             .collection("playlists")
             .document(playlistName)
             .collection("songs")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) return@addSnapshotListener
-
+            .addSnapshotListener { snapshot, _ ->
                 _playlistSongs.value = snapshot?.documents?.map { doc ->
                     Song(
                         sId = doc.id,
@@ -200,20 +223,13 @@ class PlaybackViewModel : ViewModel() {
         val userId = auth.currentUser?.uid ?: return
         if (song.sId.isBlank()) return
 
-        val data = mapOf(
-            "title" to song.title,
-            "artist" to song.artist,
-            "file" to song.file,
-            "bannerUrl" to song.bannerUrl
-        )
-
         db.collection("users")
             .document(userId)
             .collection("playlists")
             .document(playlistName)
             .collection("songs")
             .document(song.sId)
-            .set(data)
+            .set(song)
     }
 
     fun removeSongFromPlaylist(song: Song, playlistName: String = "favorites") {
@@ -233,7 +249,52 @@ class PlaybackViewModel : ViewModel() {
         return _playlistSongs.value.any { it.sId == songId }
     }
 
-    /* -------------------- ADMIN (OPTIONAL) -------------------- */
+    /* -------------------- DOWNLOADS -------------------- */
+
+    fun markSongDownloaded(songId: String) {
+        _downloadedSongs.value = _downloadedSongs.value + songId
+    }
+
+    private fun getDownloadDir(): File {
+        return Environment
+            .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+            .resolve("SkyBeat")
+    }
+
+    fun loadDownloadedSongs() {
+        val dir = getDownloadDir()
+        if (!dir.exists()) {
+            _downloadedSongs.value = emptySet()
+            return
+        }
+
+        val titles = dir.listFiles()
+            ?.filter { it.extension == "mp3" }
+            ?.map { it.nameWithoutExtension }
+            ?.toSet()
+            ?: emptySet()
+
+        _downloadedSongs.value = _songs.value
+            .filter { titles.contains(it.title) }
+            .map { it.sId }
+            .toSet()
+    }
+
+    /* -------------------- CLEANUP -------------------- */
+
+    override fun onCleared() {
+        super.onCleared()
+        musicNotificationManager?.hide()
+        mediaSession?.release()
+        exoPlayer?.release()
+
+        musicNotificationManager = null
+        mediaSession = null
+        exoPlayer = null
+    }
+
+
+    /* -------------------- ADMIN  -------------------- */
 
     fun addSongToFirestore(
         title: String,
@@ -284,34 +345,4 @@ class PlaybackViewModel : ViewModel() {
             .addOnSuccessListener { onResult(true, null) }
             .addOnFailureListener { e -> onResult(false, e.message) }
     }
-    fun markSongDownloaded(songId: String) {
-        _downloadedSongs.value = _downloadedSongs.value + songId
-    }
-    private fun getDownloadDir(): File {
-        return Environment
-            .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
-            .resolve("SkyBeat")
-    }
-    fun loadDownloadedSongs() {
-        val dir = getDownloadDir()
-        if (!dir.exists()) {
-            _downloadedSongs.value = emptySet()
-            return
-        }
-
-        val downloadedTitles = dir.listFiles()
-            ?.filter { it.extension == "mp3" }
-            ?.map { it.nameWithoutExtension }
-            ?.toSet()
-            ?: emptySet()
-
-        // Match file names with songs
-        val downloadedIds = _songs.value
-            .filter { downloadedTitles.contains(it.title) }
-            .map { it.sId }
-            .toSet()
-
-        _downloadedSongs.value = downloadedIds
-    }
-
 }
