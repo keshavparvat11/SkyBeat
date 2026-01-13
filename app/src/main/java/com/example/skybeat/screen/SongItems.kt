@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.GraphicEq
@@ -39,8 +40,10 @@ fun SongItem(
     isPlaying: Boolean,
     isInPlaylist: Boolean,
     isDownloaded: Boolean,
+    isFromDounloaded: Boolean = false,
     onClick: () -> Unit,
     onDownloadClick: (Song) -> Unit,
+    onDeleteDownload: (Song) -> Unit = {},
     onPlaylistClick: (Song, Boolean) -> Unit
 ) {
     Card(
@@ -105,21 +108,30 @@ fun SongItem(
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
-
             // ⬇️ Download Button
-            IconButton(
-                onClick = { onDownloadClick(song) },
-                enabled = !isDownloaded
-            ) {
-                Icon(
-                    imageVector = if (isDownloaded)
-                        Icons.Default.DownloadDone
-                    else
-                        Icons.Default.Download,
-                    contentDescription = "Download"
-                )
+            if (isFromDounloaded) {
+                IconButton(onClick = { onDeleteDownload(song) }) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete download",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
-
+            else{
+                IconButton(
+                    onClick = { onDownloadClick(song) },
+                    enabled = !isDownloaded
+                ) {
+                    Icon(
+                        imageVector = if (isDownloaded)
+                            Icons.Default.DownloadDone
+                        else
+                            Icons.Default.Download,
+                        contentDescription = "Download"
+                    )
+                }
+            }
             // ❤️ Playlist Button
             IconButton(
                 onClick = {

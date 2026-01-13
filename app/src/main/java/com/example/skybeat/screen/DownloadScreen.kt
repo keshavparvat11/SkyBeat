@@ -26,9 +26,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.skybeat.viewModel.PlaybackViewModel
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadsScreen(
@@ -105,7 +107,11 @@ fun DownloadsScreen(
                                 val encoded = Uri.encode(song.file)
                                 navController.navigate("detail/$encoded")
                             },
-                            onDownloadClick = {}, // already downloaded
+                            onDownloadClick = {},
+                            isFromDounloaded = true,
+                            onDeleteDownload = {
+                                playbackViewModel.deleteDownloadedSong(it)
+                            },// already downloaded
                             onPlaylistClick = { clickedSong, inPlaylist ->
                                 if (inPlaylist) {
                                     playbackViewModel.removeSongFromPlaylist(clickedSong)

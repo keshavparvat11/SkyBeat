@@ -296,6 +296,21 @@ class PlaybackViewModel : ViewModel() {
             .map { it.sId }
             .toSet()
     }
+    fun deleteDownloadedSong(song: Song) {
+        val dir = Environment
+            .getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+            .resolve("SkyBeat")
+
+        val file = File(dir, "${song.title}.mp3")
+
+        if (file.exists()) {
+            file.delete()
+        }
+
+        // Update state so UI refreshes
+        _downloadedSongs.value = _downloadedSongs.value - song.sId
+    }
+
 
     /* -------------------- CLEANUP -------------------- */
 
