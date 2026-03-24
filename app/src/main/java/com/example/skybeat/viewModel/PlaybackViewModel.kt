@@ -66,6 +66,7 @@ class PlaybackViewModel : ViewModel() {
 
     init {
         loadSongs()
+
     }
     fun seekTo(progress: Float) {
         exoPlayer?.let { player ->
@@ -376,5 +377,198 @@ class PlaybackViewModel : ViewModel() {
             .delete()
             .addOnSuccessListener { onResult(true, null) }
             .addOnFailureListener { e -> onResult(false, e.message) }
+    }
+    fun seedSongsToFirestore() {
+        val songs = listOf(
+            mapOf(
+                "title" to "Ye Jo Mohabbat Hai - Kati Patang",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/01- Kati Patang - Ye h Jo Mohabbat Hai .mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Pyar Diwana Hota Hai - Kati Patang",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/02- KATI PATANG-PYAR DIWANA HOTA HAI.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Humen Tumse Pyar Kitna - Kudrat",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/03-KUDRAT-HUMEN TUMSE PYAR KITNA.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Dekh Sakta Hoon - Majboor",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/04-MAJBOOR-DEKH SAKTA HOON.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Rimjhim Gire Sawan - Manzil",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/05- MANZIL - RIMJHIM GIRE SAWAN.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Mere Naina Sawan Bhadon - Mehbooba",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/06-MEHBOOBA-MERE NAINA SAWAN BHADON.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Pag Ghunghroo Bandh - Namak Halaal",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/07-NAMAK HALAAL-PAG GHUNGHROO BANDH.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Nadiya Se Dariya - Namak Haraam",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/08- NAMAK HARAAM - NADIYA SE DARIYA .mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Koi Lauta De Mere - Door Gagan Ki Chhaon Mein",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Diye Jalte Hain - Namak Haraam",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/09- NAMAK HARAAM-DIYE JALTE HAIN.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Ek Chatur Nar - Padosan",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/10- PADOSAN - EK CHATUR NAR KARKE .mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Musafir Hoon Yaaro - Parichay",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/11=-PARICHAY-MUSAFIR HOON YAARO.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Teri Duniya Se Hoke - Pavitra Paapi",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/12- PAVITRA PAAPI - TERI DUNIYA SE HOKE.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Yeh Jeevan Hai - Piya Ka Ghar",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/13- PIYA KA GHAR-YEH JEEVAN HAI.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Yeh Lal Rang - Prem Nagar",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/14-PREM NAGAR-YEH LAAL RANG.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Phoolon Ke Rang Se - Prem Pujari",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/15- PREM PUJARI-PHOOLON KE RANG SE.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Tum Bin Jaoon Kahan - Pyar Ka Mausam",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/16-PYAR KA MAUSAM-TUM BIN JAOON KAHAN.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Yeh Public Hai - Roti",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/17-ROTI-YEH PUBLIC HAI.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Zindagi Ka Safar - Safar",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/18-SAFAR-ZINDAGI KA SAFAR.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Samjhauta Ghamon Se Karlo - Samjhauta",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/19-SAMJHAUTA - SAMJHAUTA GHAMON SE KARLO .mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Kitne Bhi Tu Karle Sitam - Sanam Teri Kasam",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/20-SANAM TERI KASAM-KITNE BHI TU KARLE SITAM.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Dilbar Mere - Satte Pe Satta",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/21-SATTE PE SATTA - DILBAR MERE .mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "De De Pyar De - Sharaabi",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/22-SHARAABI - DE DE  PYAR DE .mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Kaise Kahen Hum - Sharmilee",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/23-SHARMILEE - KAISE KAHEN HUM .mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Khilte Hain Gul Yahan - Sharmilee",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/24-SHARMILEE - KHILTE HAIN GUL YAHAN .mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Koi Haseena - Sholay",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/25-SHOLAY - KOI HASEENA .mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Tere Jaisa Yaar Kahan - Yaarana",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/27-YAARANA - TERE JAISA YAAR KAHAN .mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Roop Tera Mastana - Aradhana",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/28-ARADHANA-ROOP TERA MASTANA.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Zindagi Ke Safar Mein - Aap Ki Kasam",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/29- AAP KI KASAM-ZINDAGI KE SAFAR MEIN.mp3",
+                "bannerUrl" to ""
+            ),
+            mapOf(
+                "title" to "Meet Na Mila Re Man Ka - Abhimaan",
+                "artist" to "Kishore Kumar",
+                "file" to "https://raw.githubusercontent.com/keshavparvat11/data/main/music/30- ABHIMAAN-MEET NA MILA RE MAN KA.mp3",
+                "bannerUrl" to ""
+            )
+        )
+
+        val batch = db.batch()
+
+        songs.forEach { song ->
+            val doc = db.collection("songs").document()
+            batch.set(doc, song)
+        }
+
+        batch.commit()
     }
 }

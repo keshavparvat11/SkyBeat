@@ -103,7 +103,6 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
 
-                /* ---------- GREETING ---------- */
                 item {
                     Column {
                         Text(
@@ -119,14 +118,14 @@ fun HomeScreen(
                     }
                 }
 
-                /* ---------- FEATURED ---------- */
                 item {
                     SectionTitle("Featured")
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.padding(top = 12.dp)
                     ) {
-                        items(songs.take(5)) { song ->
+                        // Using song.sId as key for uniqueness
+                        items(songs, key = { it.sId }) { song ->
                             FeaturedCard(
                                 song = song,
                                 isPlaying = currentSong?.file == song.file,
@@ -145,7 +144,8 @@ fun HomeScreen(
                     SectionTitle("Recently Played")
                 }
 
-                items(songs.take(10)) { song ->
+                // Using song.sId as key here too
+                items(songs.take(20), key = { "recent_${it.sId}" }) { song ->
                     val playlistSongs by playbackViewModel.playlistSongs.collectAsState()
                     val isInPlaylist = playlistSongs.any { it.sId == song.sId }
 
@@ -192,8 +192,10 @@ fun HomeScreen(
                 }
 
                 item { Spacer(Modifier.height(120.dp)) }
+
             }
         }
+
     }
 }
 

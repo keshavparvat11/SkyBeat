@@ -1,4 +1,4 @@
-package com.example.taskdesk.screen.logingScreen
+package com.example.skybeat.screen.logingScreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -124,15 +124,11 @@ fun LoginScreen(navController: NavController) {
                         authRepo.login(email, pass) { success, msg, userId ->
                             loading = false
                             if(success) {
-                                if (userId == "uksZ7nd3xJTm0s4NpwxngY68yZG2") {
-                                    navController.navigate("Admin") {
-                                        popUpTo(0) { inclusive = true }
-                                    }
-                                } else {
+
                                     navController.navigate("Home") {
                                         popUpTo(0) { inclusive = true }
                                     }
-                                }
+
                             }
                             else error = msg
                         }

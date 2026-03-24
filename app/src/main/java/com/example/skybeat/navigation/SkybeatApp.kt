@@ -26,13 +26,14 @@ import com.example.skybeat.screen.AdminScreen
 import com.example.skybeat.screen.DownloadsScreen
 import com.example.skybeat.screen.HomeScreen
 import com.example.skybeat.screen.LibraryScreen
+import com.example.skybeat.screen.ProfileScreen
 import com.example.skybeat.screen.SearchScreen
 import com.example.skybeat.screen.SongPlaying
 import com.example.skybeat.screen.SplashScreen
+import com.example.skybeat.screen.logingScreen.ForgetPasswordScreen
+import com.example.skybeat.screen.logingScreen.LoginScreen
+import com.example.skybeat.screen.logingScreen.SignUpScreen
 import com.example.skybeat.viewModel.PlaybackViewModel
-import com.example.taskdesk.screen.logingScreen.ForgetPasswordScreen
-import com.example.taskdesk.screen.logingScreen.LoginScreen
-import com.example.taskdesk.screen.logingScreen.SignUpScreen
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,13 +47,19 @@ fun SkybeatApp(playbackViewModel: PlaybackViewModel = viewModel()) {
         bottomBar = {
             if (currentRoute == BottomNavItems.Home.route ||
                 currentRoute == BottomNavItems.Library.route ||
-                currentRoute == BottomNavItems.Downloads.route
+                currentRoute == BottomNavItems.Downloads.route ||
+                currentRoute == BottomNavItems.Profile.route
             ) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.onSurface
                 ) {
-                    val bottomNavItems = listOf(BottomNavItems.Home, BottomNavItems.Library, BottomNavItems.Downloads)
+                    val bottomNavItems = listOf(
+                        BottomNavItems.Home,
+                        BottomNavItems.Library,
+                        BottomNavItems.Downloads,
+                        BottomNavItems.Profile
+                    )
                     bottomNavItems.forEach { item ->
                         NavigationBarItem(
                             selected = currentRoute == item.route,
@@ -95,6 +102,7 @@ fun SkybeatApp(playbackViewModel: PlaybackViewModel = viewModel()) {
             composable(BottomNavItems.Home.route) { HomeScreen(navController) }
             composable(BottomNavItems.Library.route) { LibraryScreen(navController) }
             composable(BottomNavItems.Downloads.route) { DownloadsScreen(navController) }
+            composable(BottomNavItems.Profile.route) { ProfileScreen(navController) }
             composable("search") { SearchScreen(navController) }
             composable("Admin") { AdminScreen(navController=navController)}
             composable("Login") { LoginScreen(navController) }

@@ -1,4 +1,4 @@
-package com.example.taskdesk.screen.logingScreen
+package com.example.skybeat.screen.logingScreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +47,7 @@ fun ForgetPasswordScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("TaskDesk") },
+                title = { Text("SkyBeat") },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF00838F))
             )
         }

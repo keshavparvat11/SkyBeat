@@ -2,6 +2,7 @@ package com.example.skybeat.navigation
 
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.FileDownload
@@ -11,4 +12,5 @@ sealed class BottomNavItems(val route: String, val label: String, val icon: Imag
     object Home : BottomNavItems("home", "Home", Icons.Default.Home)
     object Library : BottomNavItems("library", "Library", Icons.Default.LibraryMusic)
     object Downloads : BottomNavItems("downloads", "Downloads", Icons.Default.FileDownload)
+    object Profile : BottomNavItems("profile", "Profile", Icons.Default.AccountCircle)
 }
