@@ -1,17 +1,18 @@
 package com.example.skybeat.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -21,7 +22,6 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -260,9 +260,11 @@ private fun TextSizeCard(
                 steps = 8
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("A", style = MaterialTheme.typography.bodySmall)
+                Text("Aa", style = MaterialTheme.typography.bodySmall)
+                Spacer(modifier = Modifier.width(118.dp))
                 Text("Aa", style = MaterialTheme.typography.bodyLarge)
-                Text("AAA", style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.width(115.dp))
+                Text("Aa", style = MaterialTheme.typography.titleLarge)
             }
         }
     }
