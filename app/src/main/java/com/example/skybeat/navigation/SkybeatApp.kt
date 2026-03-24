@@ -38,7 +38,16 @@ import com.example.skybeat.viewModel.PlaybackViewModel
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SkybeatApp(playbackViewModel: PlaybackViewModel = viewModel()) {
+fun SkybeatApp(
+    isDarkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit,
+    textScale: Float,
+    onTextScaleChange: (Float) -> Unit,
+    notificationsEnabled: Boolean,
+    onNotificationsChange: (Boolean) -> Unit,
+    onLogout: () -> Unit,
+    playbackViewModel: PlaybackViewModel = viewModel()
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -102,7 +111,18 @@ fun SkybeatApp(playbackViewModel: PlaybackViewModel = viewModel()) {
             composable(BottomNavItems.Home.route) { HomeScreen(navController) }
             composable(BottomNavItems.Library.route) { LibraryScreen(navController) }
             composable(BottomNavItems.Downloads.route) { DownloadsScreen(navController) }
-            composable(BottomNavItems.Profile.route) { ProfileScreen(navController) }
+            composable(BottomNavItems.Profile.route) {
+                ProfileScreen(
+                    navController = navController,
+                    isDarkTheme = isDarkTheme,
+                    onThemeChange = onThemeChange,
+                    textScale = textScale,
+                    onTextScaleChange = onTextScaleChange,
+                    notificationsEnabled = notificationsEnabled,
+                    onNotificationsChange = onNotificationsChange,
+                    onLogout = onLogout
+                )
+            }
             composable("search") { SearchScreen(navController) }
             composable("Admin") { AdminScreen(navController=navController)}
             composable("Login") { LoginScreen(navController) }
