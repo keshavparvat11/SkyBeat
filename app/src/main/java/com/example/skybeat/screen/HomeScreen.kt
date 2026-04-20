@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -70,9 +69,6 @@ fun HomeScreen(
                 actions = {
                     IconButton(onClick = { navController.navigate("search") }) {
                         Icon(Icons.Default.Search, null)
-                    }
-                    IconButton(onClick = { navController.navigate("Login") }) {
-                        Icon(Icons.Default.MoreVert, null)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
